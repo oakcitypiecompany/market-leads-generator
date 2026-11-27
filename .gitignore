@@ -1,0 +1,7 @@
+# Instagram export: other people's handles, never commit
+followers_*.json
+following.json
+.build/
+data/
+node_modules/
+.env

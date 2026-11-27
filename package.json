@@ -1,0 +1,17 @@
+{
+  "name": "market-leads-generator",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "login": "node src/login.ts",
+    "fetch": "node src/fetch.ts",
+    "extract": "node src/extract.ts",
+    "leads": "node src/leads.ts",
+    "enrich": "node src/enrich.ts",
+    "send": "node --env-file-if-exists=.env src/send.ts",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "playwright": "^1.65.1"
+  }
+}
