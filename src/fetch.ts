@@ -1,5 +1,5 @@
 // Visits each watched account like a person would, saves new posts and their images to data/.
-// Usage: npm run fetch [-- --handle name] [--days 60] [--max 50] [--headless] [--debug]
+// Usage: npm run fetch [-- --handle name] [--days 60] [--max 50] [--recent 7] [--headless] [--debug]
 import { parseArgs } from 'node:util';
 import { mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs';
 import { openDb, DATA_DIR } from './db.ts';
@@ -12,6 +12,7 @@ const { values: args } = parseArgs({
     handle: { type: 'string' },
     days: { type: 'string', default: '60' }, // look-back for accounts never checked (or with --handle)
     max: { type: 'string' }, // accounts per run; the rest resume next run
+    recent: { type: 'string', default: '7' }, // skip accounts checked within this many days
     headless: { type: 'boolean', default: false },
     debug: { type: 'boolean', default: false }, // save captured JSON to data/debug/<handle>.json
   },
@@ -35,17 +36,26 @@ const imported = importAccounts(db, new URL('../', import.meta.url).pathname);
 const lookBack = Math.floor(Date.now() / 1000) - Number(args.days) * 86400;
 
 let queue: { handle: string; last_checked: number | null }[];
+let eligible = 0;
+let neverChecked = 0;
 if (args.handle) {
   const handle = args.handle.toLowerCase();
   db.prepare(`INSERT OR IGNORE INTO accounts (handle, source) VALUES (?, 'manual')`).run(handle);
   queue = [{ handle, last_checked: null }];
 } else {
   queue = db
-    .prepare(`SELECT handle, last_checked FROM accounts WHERE status = 'watched' ORDER BY last_checked IS NOT NULL, last_checked`)
-    .all() as typeof queue;
+    .prepare(
+      `SELECT handle, last_checked FROM accounts WHERE status = 'watched' AND (last_checked IS NULL OR last_checked < ?)
+       ORDER BY last_checked IS NOT NULL, last_checked`,
+    )
+    .all(Math.floor(Date.now() / 1000) - Number(args.recent) * 86400) as typeof queue;
+  eligible = queue.length;
+  neverChecked = queue.filter((a) => a.last_checked == null).length;
   if (args.max) queue = queue.slice(0, Number(args.max));
 }
-console.log(`${imported} accounts in export, checking ${queue.length}`);
+console.log(
+  `${imported} accounts in export, ${eligible} due (watched, not checked in ${args.recent} days), ${neverChecked} never checked, checking ${queue.length}`,
+);
 
 const imgDir = DATA_DIR + 'images/';
 mkdirSync(imgDir, { recursive: true });

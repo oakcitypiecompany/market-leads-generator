@@ -40,7 +40,7 @@ npm run send                # post upcoming leads to the roundup (--dry-run to p
 
 | Step | Options |
 |---|---|
-| `fetch` | `--handle name` (one account, whatever its status), `--days 60` (look-back for new accounts), `--max N`, `--headless`, `--debug` (save captured JSON to `data/debug/`) |
+| `fetch` | `--handle name` (one account, whatever its status), `--days 60` (look-back for new accounts), `--max N`, `--recent 7` (skip accounts checked in the last N days), `--headless`, `--debug` (save captured JSON to `data/debug/`) |
 | `extract` | `--retry` also reruns posts that errored |
 | `enrich` | `--all` includes past leads, `--redo` searches again |
 | `leads` | `--all` includes past leads |
