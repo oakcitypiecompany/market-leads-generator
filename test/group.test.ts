@@ -81,3 +81,12 @@ test('a lead without a market word needs a second account or full confidence', (
   ]);
   assert.deepEqual(leads.map(l => l.marketName).sort(), ['Mistletoe Market', 'The Christmas Corral', 'downtown tree lighting']);
 });
+
+test('drops a name that is only the city', () => {
+  const leads = groupMentions([
+    m('dssolvr', ev('AVL and DRM', ['2099-11-27'], { city: 'AVL', confidence: 1 })),
+    m('dssolvr', ev('AVL and DRM', ['2099-11-20'], { city: 'AVL and DRM', confidence: 1 })),
+    m('a', ev('Durham Holiday Market', ['2099-12-05'], { city: 'Durham, NC' })),
+  ]);
+  assert.deepEqual(leads.map(l => l.marketName), ['Durham Holiday Market']);
+});

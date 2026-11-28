@@ -68,7 +68,9 @@ export const outOfArea = (e: Event) =>
 
 // Single-business posts (bingo, a bakery's pickup day, Santa photos) rarely name a market; real ones usually do.
 const MARKET_WORD = /market|mkt|fair|fest|bazaar|maker|craft|vendor|pop.?up|artisan|expo|show|rodeo|flea|vintage/i;
-const looksLikeMarket = (l: Lead) => MARKET_WORD.test(l.marketName) || l.accounts.length >= 2 || l.confidence >= 1;
+// A name that's only the place ("AVL and DRM" for a brewery's two taprooms) isn't a market.
+const onlyPlace = (l: Lead) => { const cities = nameTokens(l.mentions.map(m => m.event.city ?? '').join(' ')); return !MARKET_WORD.test(l.marketName) && [...nameTokens(l.marketName)].every(w => cities.has(w)); };
+const looksLikeMarket = (l: Lead) => !onlyPlace(l) && (MARKET_WORD.test(l.marketName) || l.accounts.length >= 2 || l.confidence >= 1);
 
 export function groupMentions(mentions: Mention[], minConfidence = 0.3): Lead[] {
   // Drop names with nothing distinctive ("my markets", "10-2 market") and the posting account's own name.

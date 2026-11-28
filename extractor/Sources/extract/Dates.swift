@@ -77,6 +77,11 @@ func latinLookalikes(_ s: String) -> String {
     return String(s.map { map[$0] ?? $0 })
 }
 
+// Local shorthand the model doesn't know, so it reads "AVL and DRM" as a market name instead of two cities.
+func expandPlaceCodes(_ s: String) -> String {
+    s.replacing(/\bAVL\b/, with: "Asheville, NC").replacing(/\bDRM\b/, with: "Durham, NC")
+}
+
 // The model reads "11-5pm" as 23:00-05:00 or "9-2pm" as 21:00-14:00. Markets run in daytime and evening,
 // so an end before the start means the hours need shifting. Anything that isn't HH:MM is dropped.
 func fixTimes(_ start: String?, _ end: String?) -> (String?, String?) {
@@ -96,6 +101,7 @@ func fixTimes(_ start: String?, _ end: String?) -> (String?, String?) {
 
 func dateSelfTest() {
     let tue = day("2026-11-10")!
+    precondition(expandPlaceCodes("our AVL and DRM taprooms, #avl") == "our Asheville, NC and Durham, NC taprooms, #avl")
     let cases: [(String, Date, String?)] = [
         ("this Friday", tue, "2026-11-13"),
         ("Friday 5-9pm", tue, "2026-11-13"),

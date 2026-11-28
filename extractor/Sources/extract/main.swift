@@ -97,6 +97,7 @@ if let caption = job.caption, !caption.isEmpty { prompt += "\nPost caption:\n\(c
 if !ocrText.isEmpty { prompt += "\nText read from the post's images:\n\(ocrText)\n" }
 // shortcut: hard cut to stay inside the on-device model's ~4k-token window; chunk pages if websites get truncated badly.
 if let page = job.pageText, !page.isEmpty { prompt += "\nWebsite text:\n\(page.prefix(6000))\n" }
+prompt = expandPlaceCodes(prompt)
 
 let session = LanguageModelSession(instructions: """
     You extract local events where several vendors sell to the public: farmers markets, makers and craft markets, \
